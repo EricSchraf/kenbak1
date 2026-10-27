@@ -84,4 +84,120 @@ Téléchargez les fichiers :
 
 Puis ouvrez simplement le fichier souhaité dans votre navigateur.
 
-Aucun serveur web
+Aucun serveur web n'est nécessaire.
+
+---
+
+### Compatibilité
+
+Testé avec :
+
+- Google Chrome
+- Microsoft Edge
+- Mozilla Firefox
+
+---
+
+### Licence
+
+Projet open source. Libre à chacun de l'utiliser, l'étudier et l'améliorer.
+
+---
+
+## 🇬🇧 English
+
+### Overview
+
+This repository contains three standalone HTML applications dedicated to the **Kenbak-1**, widely regarded as one of the earliest personal computers.
+
+The tools run directly in a web browser and require no installation.
+
+---
+
+### 1. Kenbak-1 Emulator
+
+A graphical emulator reproducing the appearance and behavior of the original 1971 Kenbak-1.
+
+#### Features
+
+- Faithful front panel recreation
+- Live A, B, X and P registers
+- Full 256-byte memory view
+- Front-panel button input
+- Adjustable execution speed
+- Single-step execution mode
+- Simple breakpoints
+- Octal program loader
+- Built-in examples:
+  - Binary counter
+  - Higher-or-Lower game
+  - Collatz (Syracuse) sequence
+
+---
+
+### 2. Kenbak-1 Assembler
+
+A modern assembler for Kenbak-1 machine language.
+
+#### Features
+
+- Readable mnemonic instructions
+- Label support
+- Directives:
+  - ORG
+  - DB
+  - EQU
+  - START
+- Number formats:
+  - Octal
+  - Decimal
+  - Hexadecimal
+  - Binary
+- Syntax error detection
+- Generated listing with addresses and octal bytes
+- Direct copy-and-paste into the emulator loader
+
+---
+
+### 3. Colorize
+
+Syntax-highlighting tool designed for educational material and presentations.
+
+#### Features
+
+- Automatic Kenbak-1 code highlighting
+- Fully customizable colors
+- Adjustable font and size
+- Live preview
+- Rich HTML clipboard export
+- Preserves formatting when pasted into Microsoft PowerPoint
+
+---
+
+### Usage
+
+Download:
+
+- `emulator.html`
+- `assembly.html`
+- `colorize.html`
+
+Then simply open the desired file in your favorite web browser.
+
+No web server is required.
+
+---
+
+### Compatibility
+
+Tested with:
+
+- Google Chrome
+- Microsoft Edge
+- Mozilla Firefox
+
+---
+
+### License
+
+Open-source project. Feel free to use, study, modify and improve it.
