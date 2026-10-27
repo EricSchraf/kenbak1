@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kenbak-1 — emulator — youtube.com/schraf</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+ --bg:#e9e7e2;--bg2:#d8d5ce;--ink:#23211f;--mute:#6d6962;--card:#f7f6f2;--line:#cfcbc2;--accent:#1f5fae;--cell:#efede7;--hi:#ffd84d;}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1b1d21;--bg2:#121316;--ink:#e8e6e1;--mute:#9a978f;--card:#24272c;--line:#363a41;--accent:#6fa8ee;--cell:#1d1f23;--hi:#7a6200;}}
+:root[data-theme="dark"]{--bg:#1b1d21;--bg2:#121316;--ink:#e8e6e1;--mute:#9a978f;--card:#24272c;--line:#363a41;--accent:#6fa8ee;--cell:#1d1f23;--hi:#7a6200;}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,var(--bg),var(--bg2));color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:20px 12px 40px}
+header{text-align:center;margin-bottom:18px}
+header h1{margin:0;font-size:13px;letter-spacing:.28em;text-transform:uppercase;font-weight:600;color:var(--mute)}
+header p{margin:4px 0 0;font-size:12px;color:var(--mute)}
+#fit{margin:0 auto;position:relative}
+#machine{position:absolute;left:0;top:0;width:1423px;height:340px;transform-origin:0 0}
+.chassis{position:absolute;left:60px;top:20px;width:1303px;height:291px;filter:drop-shadow(0 18px 22px rgba(0,0,0,.35))}
+.body{position:absolute;inset:0;background:linear-gradient(#3f8fd0,#1f6aa8 55%,#17548a);clip-path:polygon(6.8% 0,93.2% 0,100% 63%,93.2% 100%,6.8% 100%,0 63%)}
+.plate{position:absolute;inset:9px 10px 9px 10px;clip-path:polygon(6.5% 0,93.5% 0,100% 63%,93.5% 100%,6.5% 100%,0 63%);
+ background:repeating-linear-gradient(0deg,rgba(0,0,0,.04) 0 1px,rgba(255,255,255,.06) 1px 2px),linear-gradient(#d9dadb,#c3c5c7 60%,#b4b6b9)}
+.handle{position:absolute;top:116px;width:92px;height:80px;background:repeating-linear-gradient(90deg,#e8e8e6 0 7px,#b9bab8 7px 9px);border-radius:6px;box-shadow:inset 0 2px 0 #fff,0 3px 6px rgba(0,0,0,.35)}
+.handle.l{left:-50px;transform:skewY(-12deg)}.handle.r{right:-50px;transform:skewY(12deg)}
+.t{position:absolute;transform:translate(-50%,-50%);font:700 17px/1 Helvetica,Arial,sans-serif;color:#15181a;white-space:nowrap;user-select:none}
+.t.s{font-size:12px;font-weight:600}.t.big{font-size:20px;letter-spacing:.1em}
+.grp{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;gap:6px;font:700 17px/1 Helvetica,Arial,sans-serif;color:#15181a;user-select:none}
+.grp i{flex:1;height:2px;background:#15181a}
+.brand{position:absolute;left:918px;top:238px;font:italic 800 30px/1 Helvetica,Arial,sans-serif;color:#1d2124;letter-spacing:.02em;user-select:none}
+.led{position:absolute;width:24px;height:24px;border-radius:50%;transform:translate(-50%,-50%)}
+.led.w{background:radial-gradient(circle at 40% 35%,#f6f6f4,#8c8d8c 60%,#030404);box-shadow:0 0 0 3px #c6c8c8,0 0 0 4px #8d9090,inset 0 -2px 3px rgba(0,0,0,.25)}
+.led.w.on{background:radial-gradient(circle at 45% 40%,#fff,#eef8ff 55%,#cfe6fa);box-shadow:0 0 0 3px #d9ecfb,0 0 0 4px #8d9090,0 0 16px 8px rgba(200,230,255,.9),0 0 34px 14px rgba(170,215,255,.45)}
+.led.y{background:radial-gradient(circle at 40% 35%,#dde08a,#b9bd4c 65%,#8f9330);box-shadow:0 0 0 3px #c9cb7a,0 0 0 4px #8d9090,inset 0 -2px 3px rgba(0,0,0,.25)}
+.led.y.on{background:radial-gradient(circle at 45% 40%,#ffffc0,#f3ff43 55%,#d6ee1b);box-shadow:0 0 0 3px #e6f27a,0 0 0 4px #8d9090,0 0 16px 8px rgba(238,255,60,.85),0 0 34px 14px rgba(225,250,40,.4)}
+.sock{position:absolute;width:62px;height:62px;transform:translate(-50%,-50%);background:linear-gradient(#6a6c6e,#9a9c9e);border-radius:8px;box-shadow:inset 0 3px 6px rgba(0,0,0,.6),0 1px 0 rgba(255,255,255,.6)}
+.key{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border:0;border-radius:6px;padding:0;cursor:pointer;touch-action:none;
+ font:700 10px/1 Helvetica,Arial,sans-serif;letter-spacing:.06em;color:#fff;transition:transform .05s,box-shadow .05s;outline-offset:3px}
+.key.b{background:linear-gradient(160deg,#35363a,#0c0c0e);box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 0 0 2px #17181a,0 5px 0 #000,0 7px 8px rgba(0,0,0,.5)}
+.key.w{background:linear-gradient(160deg,#f6f3ea,#d9d5c8);box-shadow:inset 0 1px 0 #fff,inset 0 0 0 2px #c7c3b6,0 5px 0 #8f8c80,0 7px 8px rgba(0,0,0,.4)}
+.key.r{background:linear-gradient(160deg,#d8303a,#901019);box-shadow:inset 0 1px 0 rgba(255,255,255,.4),inset 0 0 0 2px #a8141d,0 5px 0 #5c0a10,0 7px 8px rgba(0,0,0,.5)}
+.key.dn{transform:translateY(4px);box-shadow:inset 0 1px 0 rgba(255,255,255,.2),inset 0 0 0 2px rgba(0,0,0,.25),0 1px 0 #000}
+.pw{position:absolute;left:1173px;top:146px;width:60px;height:80px;transform:translate(-50%,-50%);border:0;background:none;cursor:pointer;padding:0}
+.pw .nut{position:absolute;left:50%;top:50%;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#f4f4f4,#9c9fa2);box-shadow:0 0 0 3px #75787b,0 3px 6px rgba(0,0,0,.5)}
+.pw .lev{position:absolute;left:50%;top:50%;width:11px;height:40px;margin-left:-5.5px;margin-top:-40px;transform-origin:50% 100%;border-radius:6px 6px 3px 3px;background:linear-gradient(90deg,#444,#050505 45%,#555);box-shadow:0 2px 4px rgba(0,0,0,.5);transition:transform .15s cubic-bezier(.3,1.6,.5,1);transform:rotate(172deg)}
+.pw[aria-pressed="true"] .lev{transform:rotate(-6deg)}
+.regs{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:6px auto 18px;max-width:900px}
+.reg{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:6px 14px;min-width:84px;text-align:center}
+.reg small{display:block;font-size:11px;color:var(--mute);letter-spacing:.08em}
+.reg b{font:600 20px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.tools{max-width:900px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.tabs{display:flex;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{flex:1;padding:11px 14px;border:0;background:none;color:var(--mute);font:600 13px system-ui,sans-serif;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent}
+.tabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.pane{padding:14px 16px;display:none}.pane.on{display:block}
+.mem{overflow-x:auto}
+table.m{border-collapse:collapse;font:12.5px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;margin:0 auto}
+.m th{color:var(--mute);font-weight:500;padding:2px 5px}
+.m td{padding:2px 6px;text-align:center;background:var(--cell);border:1px solid var(--line)}
+.m td.sp{color:var(--accent);font-weight:700}.m td.pc{background:var(--hi);font-weight:700}
+textarea,input[type=number],input[type=text]{font:13px ui-monospace,Menlo,Consolas,monospace;background:var(--cell);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px}
+textarea{width:100%;height:170px;resize:vertical}
+.btn{font:600 13px system-ui,sans-serif;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--cell);color:var(--ink);cursor:pointer}
+.btn.p{background:var(--accent);color:#fff;border-color:transparent}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.note{font-size:12.5px;color:var(--mute);margin:8px 0 0}
+#status{min-height:1.4em;text-align:center;font-size:13px;color:var(--mute);margin:-6px 0 14px}
+.reg.step{display:flex;flex-direction:column;align-items:center;justify-content:center}
+.reg.step button{margin-top:2px;padding:3px 14px;font-size:14px;border-radius:6px}
+</style>
+</head>
+<body>
+<header><h1>Kenbak-1 (1971)</h1><p>youtube.com/schraf</p></header>
+<div id="fit"><div id="machine"><div class="chassis">
+ <div class="handle l"></div><div class="handle r"></div>
+ <div class="body"></div><div class="plate"></div>
+ <div id="panel" style="position:absolute;inset:0"></div>
+</div></div></div>
+<div id="status" aria-live="polite"></div>
+<div class="regs">
+ <div class="reg"><small>A</small><b id="rA">000</b></div><div class="reg"><small>B</small><b id="rB">000</b></div>
+ <div class="reg"><small>X</small><b id="rX">000</b></div><div class="reg"><small>P</small><b id="rP">000</b></div>
+ <div class="reg"><small>ADRESSE</small><b id="rAd">000</b></div>
+ <div class="reg step"><small>PAS À PAS</small><button class="btn p" id="bStep"> ▶ </button></div>
+</div>
+<div class="tools">
+ <div class="tabs" role="tablist">
+  <button role="tab" data-t="mem" aria-selected="true">Mémoire</button>
+  <button role="tab" data-t="load" aria-selected="false">Charger un programme</button>
+  <button role="tab" data-t="opt" aria-selected="false">Exécution</button>
+ </div>
+ <div class="pane on" id="p-mem"><div class="mem"><table class="m" id="grid"></table></div>
+  <p class="note">Valeurs en octal. Jaune : instruction en cours (adresse pointée par P). Bleu : registres A, B, X, P, sortie (200) et entrée (377).</p></div>
+ <div class="pane" id="p-load">
+  <textarea id="src" spellcheck="false" placeholder="003: 004&#10;004: 003 001 034 200 344 004"></textarea>
+  <div class="row"><button class="btn p" id="bLoad">Charger en mémoire</button><button class="btn" id="bDemo">Exemple : compteur</button><button class="btn" id="bDemo2">Exemple : + ou −</button><button class="btn" id="bDemo3">Syracuse</button></div>
+  <p class="note">Format : « 004: » fixe l’adresse, puis des valeurs octales à la suite. L’ordinateur s’allume tout seul si besoin. Pour lancer : mettre l’adresse de départ en case 003, puis START.</p></div>
+ <div class="pane" id="p-opt">
+  <div class="row"><label for="ips">Vitesse</label><input type="range" id="ips" min="1" max="1000" value="20" style="flex:1;min-width:140px"><b id="ipsv">20 instr/s</b></div>
+  <div class="row"><button class="btn" id="bStep">Pas à pas</button><button class="btn" id="bReset">Tout effacer (rallumer)</button></div>
+  <div class="row"><label><input type="checkbox" id="bpOn"> Pause quand la case</label><input type="text" id="bpA" size="3" maxlength="3" placeholder="000"><span>contient</span><input type="text" id="bpV" size="3" maxlength="3" placeholder="000"><span>(octal)</span></div>
+ </div>
+</div>
+<script>
+// ===== Noyau du processeur (repris de l’émulateur d’origine) =====
+	// ################################## //
+	//	Globals
+	// ################################## //
+
+	var poweron = false;
+	var lockon = false;
+	var memory = new Array(256);
+
+	var data_switches = 0; // state of console data switches
+	
+	var isrunning = false;
+
+	var curadr = 0; // apparently, it's not reg_p ... who knew?
+
+	// IE doesn't understand const
+	var reg_a = 0000; // Octal numbers begin with a 0
+	var reg_b = 0001;
+	var reg_x = 0002;
+	var reg_p = 0003;
+	var reg_a_oc = 0201; // overflow and carry bits 0 0 CA OF 
+	var reg_b_oc = 0202;
+	var reg_x_oc = 0203;
+	var reg_in = 0377;
+	var reg_out = 0200;
+
+	var speed = 20; // 55 is about the correct 18.2
+
+	var breakconditions = "";
+
+	var option_update_memory = true;
+
+	function run() 
+	{ 
+		doinstruction();
+		
+		if (optionenabled("nobreak") | !eval(breakconditions))
+		{
+			if (isrunning)
+			{ 
+				setTimeout("run();",speed);
+			} 
+			else 
+			{ 
+				light_off("run");
+				stoprun();
+			} 
+		}
+		if (option_update_memory) { updatedump(); }
+	}
+
+	function setdatalights(a) 
+	{
+		for (i=0;i<8;i++)
+		{ 
+			b=document.getElementById("light_"+i);
+			b.style.display="none";
+			if ((a>>i)&0x01==1) {b.style.display="block";}
+		}
+	}
+
+	function setbit(bit, val) { return val |= (1<<bit); }
+	function resetbit(bit, val) { return val &= ((1<<bit)^0xFF); }
+
+	function console_clear() { memory[reg_in] = 0; setdatalights(memory[reg_in]); }
+	
+	function console_store() { if(!lockon) { memory[curadr]=memory[reg_in]; inc_curadr(); } }
+	function console_read() { memory[reg_in]=memory[curadr]; inc_curadr(); setdatalights(memory[reg_in]); }
+
+	function console_set() { curadr=memory[reg_in]; } //set address
+	function console_display() { setdatalights(curadr); } //display address
+
+	function inc_curadr() { curadr++; curadr&=255; } // increments address register by 1
+	function inc_reg_p() { memory[reg_p]++; memory[reg_p]&=255; } // increments P register by 1
+	function inc_reg_p2() { memory[reg_p]+=2; memory[reg_p]&=255; } // increments P register by 2
+
+	function doinstruction()
+	{
+		inst = memory[memory[reg_p]];
+		inst2 = memory[memory[reg_p]+1];
+
+		//### ADD ###
+		if (inst==0003) { inst_add(reg_a,inst2); inc_reg_p2(); } // ADD A IMMEDIATE
+		if (inst==0004) { inst_add(reg_a,memory[inst2]); inc_reg_p2(); } // ADD A MEMORY
+		if (inst==0005) { inst_add(reg_a,memory[memory[inst2]]); inc_reg_p2(); } // ADD A INDIRECT
+		if (inst==0006) { inst_add(reg_a,memory[(inst2+memory[reg_x])&0xFF]); inc_reg_p2(); } // ADD A INDEXED
+		if (inst==0007) { inst_add(reg_a,memory[(memory[inst2]+memory[reg_x])&0xFF]); inc_reg_p2(); } // ADD A INDEXED INDIRECT
+		if (inst==0103) { inst_add(reg_b,inst2); inc_reg_p2(); } // ADD B IMMEDIATE
+		if (inst==0104) { inst_add(reg_b,memory[inst2]); inc_reg_p2(); } // ADD B MEMORY
+		if (inst==0105) { inst_add(reg_b,memory[memory[inst2]]); inc_reg_p2(); } // ADD B INDIRECT
+		if (inst==0106) { inst_add(reg_b,memory[(inst2+memory[reg_x])&0xFF]); inc_reg_p2(); } // ADD B INDEXED
+		if (inst==0107) { inst_add(reg_b,memory[(memory[inst2]+memory[reg_x])&0xFF]); inc_reg_p2(); } // ADD B INDEXED INDIRECT
+		if (inst==0203) { inst_add(reg_x,inst2); inc_reg_p2(); } // ADD X IMMEDIATE
+		if (inst==0204) { inst_add(reg_x,memory[inst2]); inc_reg_p2(); } // ADD X MEMORY
+		if (inst==0205) { inst_add(reg_x,memory[memory[inst2]]); inc_reg_p2(); } // ADD X INDIRECT
+		if (inst==0206) { inst_add(reg_x,memory[(inst2+memory[reg_x])&0xFF]); inc_reg_p2(); } // ADD X INDEXED
+		if (inst==0207) { inst_add(reg_x,memory[(memory[inst2]+memory[reg_x])&0xFF]); inc_reg_p2(); } // ADD X INDEXED INDIRECT
+		//### SUB ###
+		if (inst==0013) { inst_sub(reg_a,inst2); inc_reg_p2(); } // SUB A IMMEDIATE
+		if (inst==0014) { inst_sub(reg_a,memory[inst2]); inc_reg_p2(); } // SUB A MEMORY
+		if (inst==0015) { inst_sub(reg_a,memory[memory[inst2]]); inc_reg_p2(); } // SUB A INDIRECT
+		if (inst==0016) { inst_sub(reg_a,memory[(inst2+memory[reg_x])&0xFF]); inc_reg_p2(); } // SUB A INDEXED
+		if (inst==0017) { inst_sub(reg_a,memory[(memory[inst2]+memory[reg_x])&0xFF]); inc_reg_p2(); } // SUB A INDEXED INDIRECT
+		if (inst==0113) { inst_sub(reg_b,inst2); inc_reg_p2(); } // SUB B IMMEDIATE
+		if (inst==0114) { inst_sub(reg_b,memory[inst2]); inc_reg_p2(); } // SUB B MEMORY
+		if (inst==0115) { inst_sub(reg_b,memory[memory[inst2]]); inc_reg_p2(); } // SUB B INDIRECT
+		if (inst==0116) { inst_sub(reg_b,memory[(inst2+memory[reg_x])&0xFF]); inc_reg_p2(); } // SUB B INDEXED
+		if (inst==0117) { inst_sub(reg_b,memory[(memory[inst2]+memory[reg_x])&0xFF]); inc_reg_p2(); } // SUB B INDEXED INDIRECT
+		if (inst==0213) { inst_sub(reg_x,inst2); inc_reg_p2(); } // SUB X IMMEDIATE
+		if (inst==0214) { inst_sub(reg_x,memory[inst2]); inc_reg_p2(); } // SUB X MEMORY
+		if (inst==0215) { inst_sub(reg_x,memory[memory[inst2]]); inc_reg_p2(); } // SUB X INDIRECT
+		if (inst==0216) { inst_sub(reg_x,memory[(inst2+memory[reg_x])&0xFF]); inc_reg_p2(); } // SUB X INDEXED
+		if (inst==0217) { inst_sub(reg_x,memory[(memory[inst2]+memory[reg_x])&0xFF]); inc_reg_p2(); } // SUB X INDEXED INDIRECT
+
+		//### LOAD ###
+		if (inst==0023) { memory[reg_a]=inst2; inc_reg_p2(); } // LOAD A IMMEDIATE
+		if (inst==0024) { memory[reg_a]=memory[inst2]; inc_reg_p2(); } // LOAD A MEMORY
+		if (inst==0025) { memory[reg_a]=memory[memory[inst2]]; inc_reg_p2(); } // LOAD A INDIRECT
+		if (inst==0026) { memory[reg_a]=memory[(inst2+memory[reg_x])&0xFF]; inc_reg_p2(); } // LOAD A INDEXED	
+		if (inst==0027) { memory[reg_a]=memory[(memory[inst2]+memory[reg_x])&0xFF]; inc_reg_p2(); } // LOAD A INDEXED INDIRECT
+		if (inst==0123) { memory[reg_b]=inst2; inc_reg_p2(); } // LOAD B IMMEDIATE
+		if (inst==0124) { memory[reg_b]=memory[inst2]; inc_reg_p2(); } // LOAD B MEMORY
+		if (inst==0125) { memory[reg_b]=memory[memory[inst2]]; inc_reg_p2(); } // LOAD B INDIRECT
+		if (inst==0126) { memory[reg_b]=memory[(inst2+memory[reg_x])&0xFF]; inc_reg_p2(); } // LOAD B INDEXED
+		if (inst==0127) { memory[reg_b]=memory[(memory[inst2]+memory[reg_x])&0xFF]; inc_reg_p2(); } // LOAD B INDEXED INDIRECT
+		if (inst==0223) { memory[reg_x]=inst2; inc_reg_p2(); } // LOAD X IMMEDIATE
+		if (inst==0224) { memory[reg_x]=memory[inst2]; inc_reg_p2(); } // LOAD X MEMORY
+		if (inst==0225) { memory[reg_x]=memory[memory[inst2]]; inc_reg_p2(); } // LOAD X INDIRECT
+		if (inst==0226) { memory[reg_x]=memory[(inst2+memory[reg_x])&0xFF]; inc_reg_p2(); } // LOAD X INDEXED
+		if (inst==0227) { memory[reg_x]=memory[(memory[inst2]+memory[reg_x])&0xFF]; inc_reg_p2(); } // LOAD X INDEXED INDIRECT
+
+		//### STORE ###
+		if (inst==0033) { memory[memory[reg_p]+1] = memory[reg_a]; inc_reg_p2(); } // STORE A IMMEDIATE
+		if (inst==0034) { memory[inst2] = memory[reg_a]; inc_reg_p2(); } // STORE A MEMORY
+		if (inst==0035) { memory[memory[inst2]] = memory[reg_a]; inc_reg_p2(); } // STORE A INDIRECT
+		if (inst==0036) { memory[(inst2+memory[reg_x])&0xFF] = memory[reg_a]; inc_reg_p2(); } // STORE A INDEXED
+		if (inst==0037) { memory[(memory[inst2]+memory[reg_x])&0xFF] = memory[reg_a]; inc_reg_p2(); } // STORE A INDEXED INDIRECT
+		if (inst==0133) { memory[memory[reg_p]+1] = memory[reg_b]; inc_reg_p2(); } // STORE B IMMEDIATE
+		if (inst==0134) { memory[inst2] = memory[reg_b]; inc_reg_p2(); } // STORE B MEMORY
+		if (inst==0135) { memory[memory[inst2]] = memory[reg_b]; inc_reg_p2(); } // STORE B INDIRECT
+		if (inst==0136) { memory[(inst2+memory[reg_x])&0xFF] = memory[reg_b]; inc_reg_p2(); } // STORE B INDEXED
+		if (inst==0137) { memory[(memory[inst2]+memory[reg_x])&0xFF] = memory[reg_b]; inc_reg_p2(); } // STORE B INDEXED INDIRECT
+		if (inst==0233) { memory[memory[reg_p]+1] = memory[reg_x]; inc_reg_p2(); } // STORE X IMMEDIATE
+		if (inst==0234) { memory[inst2] = memory[reg_x]; inc_reg_p2(); } // STORE X MEMORY
+		if (inst==0235) { memory[memory[inst2]] = memory[reg_x]; inc_reg_p2(); } // STORE X INDIRECT
+		if (inst==0236) { memory[(inst2+memory[reg_x])&0xFF] = memory[reg_x]; inc_reg_p2(); } // STORE X INDEXED
+		if (inst==0237) { memory[(memory[inst2]+memory[reg_x])&0xFF] = memory[reg_x]; inc_reg_p2(); } // STORE X INDEXED INDIRECT
+
+		//### LOGICAL PRODUCT (AND) ###
+		if (inst==0323) { memory[reg_a]&=inst2; inc_reg_p2(); } // AND A IMMEDIATE
+		if (inst==0324) { memory[reg_a]&=memory[inst2]; inc_reg_p2(); } // AND A MEMORY
+		if (inst==0325) { memory[reg_a]&=memory[memory[inst2]]; inc_reg_p2(); } // AND A INDIRECT
+		if (inst==0326) { memory[reg_a]&=memory[(inst2+memory[reg_x])&0xFF]; inc_reg_p2(); } // AND A INDEXED
+		if (inst==0327) { memory[reg_a]&=memory[(memory[inst2]+memory[reg_x])&0xFF]; inc_reg_p2(); } // AND A INDEXED INDIRECT
+		
+		//### LOGICAL SUM (OR) ###
+		if (inst==0303) { memory[reg_a]|=inst2; inc_reg_p2(); } // OR A IMMEDIATE
+		if (inst==0304) { memory[reg_a]|=memory[inst2]; inc_reg_p2(); } // OR A MEMORY
+		if (inst==0305) { memory[reg_a]|=memory[memory[inst2]]; inc_reg_p2(); } // OR A INDIRECT
+		if (inst==0306) { memory[reg_a]|=memory[(inst2+memory[reg_x])&0xFF]; inc_reg_p2(); } // OR A INDEXED
+		if (inst==0307) { memory[reg_a]|=memory[(memory[inst2]+memory[reg_x])&0xFF]; inc_reg_p2(); } // OR A INDEXED INDIRECT
+
+		//### LOAD COMPLEMENT (LNEG) ###
+		if (inst==0333) { memory[reg_a]=((inst2)^0xFF)+1; inc_reg_p2(); } // LOAD A NEG IMMEDIATE
+		if (inst==0334) { memory[reg_a]=((memory[inst2])^0xFF)+1; inc_reg_p2(); } // LOAD A NEG MEMORY
+		if (inst==0335) { memory[reg_a]=((memory[memory[inst2]])^0xFF)+1; inc_reg_p2(); } // LOAD A NEG INDIRECT
+		if (inst==0336) { memory[reg_a]=memory[(((inst2+memory[reg_x])&0xFF)^0xFF)+1]; inc_reg_p2(); } // LOAD A NEG INDEXED
+		if (inst==0337) { memory[reg_a]=memory[(((memory[inst2]+memory[reg_x])&0xFF)^0xFF)+1]; inc_reg_p2(); } // LOAD A NEG INDEXED INDIRECT
+
+		//### JUMP ###
+		if (inst==0043) { if (memory[reg_a]!=0){inst_jumpdirect(inst2);}else{inc_reg_p2();} } // JUMP DIRECT NONZERO A
+		if (inst==0044) { if (memory[reg_a]==0){inst_jumpdirect(inst2);}else{inc_reg_p2();} } // JUMP DIRECT ZERO A
+		if (inst==0045) { if ((memory[reg_a] & 0x80) == 0x80){inst_jumpdirect(inst2);}else{inc_reg_p2();} } // JUMP DIRECT NEGATIVE A
+		if (inst==0046) { if ((memory[reg_a] & 0x80) != 0x80){inst_jumpdirect(inst2);}else{inc_reg_p2();} } // JUMP DIRECT POSITIVE A
+		if (inst==0047)  // JUMP DIRECT POSITIVE NONZERO A
+		{
+			if ( ((memory[reg_a] & 0x80) != 0x80) && memory[reg_a]>0) { inst_jumpdirect(inst2); }
+			else { inc_reg_p2(); }
+		}
+		if (inst==0053) { if (memory[reg_a]!=0){inst_jumpindirect(inst2);}else{inc_reg_p2();} } // JUMP INDIRECT NONZERO A
+		if (inst==0054) { if (memory[reg_a]==0){inst_jumpindirect(inst2);}else{inc_reg_p2();} } // JUMP INDIRECT ZERO A
+		if (inst==0055) { if ((memory[reg_a] & 0x80) == 0x80){inst_jumpindirect(inst2);}else{inc_reg_p2();} } // JUMP INDIRECT NEGATIVE A
+		if (inst==0056) { if ((memory[reg_a] & 0x80) != 0x80){inst_jumpindirect(inst2);}else{inc_reg_p2();} } // JUMP INDIRECT POSITIVE A
+		if (inst==0057) // JUMP INDIRECT POSITIVE NONZERO A
+		{ 
+			if ( ((memory[reg_a] & 0x80) != 0x80) && memory[reg_a]>0) { inst_jumpindirect(inst2); }
+			else { inc_reg_p2(); }
+		}
+		if (inst==0063) { if (memory[reg_a]!=0){inst_jumpmarkdirect(inst2);}else{inc_reg_p2();} } // JUMP & MARK DIRECT NONZERO A
+		if (inst==0064) { if (memory[reg_a]==0){inst_jumpmarkdirect(inst2);}else{inc_reg_p2();} } // JUMP & MARK DIRECT ZERO A
+		if (inst==0065) { if ((memory[reg_a] & 0x80) == 0x80){inst_jumpmarkdirect(inst2);}else{inc_reg_p2();} } // JUMP & MARK DIRECT NEGATIVE A
+		if (inst==0066) { if ((memory[reg_a] & 0x80) != 0x80){inst_jumpmarkdirect(inst2);}else{inc_reg_p2();} } // JUMP & MARK DIRECT POSITIVE A
+		if (inst==0067) // JUMP & MARK DIRECT POSITIVE NONZERO A
+		{
+			if ( ((memory[reg_a] & 0x80) != 0x80) && memory[reg_a]>0) { inst_jumpdirect(inst2); }
+			else { inc_reg_p2(); }
+		} 
+		if (inst==0073) { if (memory[reg_a]!=0){inst_jumpmarkindirect(inst2);}else{inc_reg_p2();} } // JUMP & MARK INDIR NONZERO A
+		if (inst==0074) { if (memory[reg_a]==0){inst_jumpmarkindirect(inst2);}else{inc_reg_p2();} } // JUMP & MARK INDIR ZERO A
+		if (inst==0075) { if ((memory[reg_a] & 0x80) == 0x80){inst_jumpmarkindirect(inst2);} else{inc_reg_p2();} } // JUMP & MARK INDIR NEG A
+		if (inst==0076) { if ((memory[reg_a] & 0x80) != 0x80){inst_jumpmarkindirect(inst2);} else{inc_reg_p2();} } // JUMP & MARK INDIR POS A
+		if (inst==0077) // JUMP & MARK INDIRECT POSITIVE NONZERO A
+		{ 
+			if ( ((memory[reg_a] & 0x80) != 0x80) && memory[reg_a]>0) { inst_jumpmarkindirect(inst2);}
+			else{inc_reg_p2(); }
+		} 
+		// JUMP B
+		if (inst==0143) { if (memory[reg_b]!=0){inst_jumpdirect(inst2);}else{inc_reg_p2();} } // JUMP DIRECT NONZERO B
+		if (inst==0144) { if (memory[reg_b]==0){inst_jumpdirect(inst2);}else{inc_reg_p2();} } // JUMP DIRECT ZERO B
+		if (inst==0145) { if ((memory[reg_b] & 0x80) == 0x80){inst_jumpdirect(inst2);}else{inc_reg_p2();} } // JUMP DIRECT NEGATIVE B
+		if (inst==0146) { if ((memory[reg_b] & 0x80) != 0x80){inst_jumpdirect(inst2);}else{inc_reg_p2();} } // JUMP DIRECT POSITIVE B
+		if (inst==0147)  // JUMP DIRECT POSITIVE NONZERO B
+		{
+			if ( ((memory[reg_b] & 0x80) != 0x80) && memory[reg_b]>0) { inst_jumpdirect(inst2); }
+			else { inc_reg_p2(); }
+		}
+		if (inst==0153) { if (memory[reg_b]!=0){inst_jumpindirect(inst2);}else{inc_reg_p2();} } // JUMP INDIRECT NONZERO B
+		if (inst==0154) { if (memory[reg_b]==0){inst_jumpindirect(inst2);}else{inc_reg_p2();} } // JUMP INDIRECT ZERO B
+		if (inst==0155) { if ((memory[reg_b] & 0x80) == 0x80){inst_jumpindirect(inst2);}else{inc_reg_p2();} } // JUMP INDIRECT NEGATIVE B
+		if (inst==0156) { if ((memory[reg_b] & 0x80) != 0x80){inst_jumpindirect(inst2);}else{inc_reg_p2();} } // JUMP INDIRECT POSITIVE B
+		if (inst==0157) // JUMP INDIRECT POSITIVE NONZERO B
+		{
+			if ((memory[reg_b] & 0x80) != 0x80 && memory[reg_b]>0) { inst_jumpindirect(inst2); }
+			else { inc_reg_p2(); }
+		} 
+		if (inst==0163) { if (memory[reg_b]!=0){inst_jumpmarkdirect(inst2);}else{inc_reg_p2();} } // JUMP & MARK DIRECT NONZERO B
+		if (inst==0164) { if (memory[reg_b]==0){inst_jumpmarkdirect(inst2);}else{inc_reg_p2();} } // JUMP & MARK DIRECT ZERO B
+		if (inst==0165) { if ((memory[reg_b] & 0x80) == 0x80){inst_jumpmarkdirect(inst2);}else{inc_reg_p2();} } // JUMP & MARK DIRECT NEG B
+		if (inst==0166) { if ((memory[reg_b] & 0x80) != 0x80){inst_jumpmarkdirect(inst2);}else{inc_reg_p2();} } // JUMP & MARK DIRECT POS B
+		if (inst==0167) // JUMP & MARK DIRECT POSITIVE NONZERO B
+		{
+			if ((memory[reg_b] & 0x80) != 0x80 && memory[reg_b]>0) { inst_jumpmarkdirect(inst2); }
+			else { inc_reg_p2(); }
+		} 
+		if (inst==0173) { if (memory[reg_b]!=0){inst_jumpmarkindirect(inst2);}else{inc_reg_p2();} } // JUMP & MARK INDIR NONZERO B
+		if (inst==0174) { if (memory[reg_b]==0){inst_jumpmarkindirect(inst2);}else{inc_reg_p2();} } // JUMP & MARK INDIR ZERO B
+		if (inst==0175) { if ((memory[reg_b] & 0x80) == 0x80){inst_jumpmarkindirect(inst2);} else{inc_reg_p2();} } // JUMP & MARK INDIRECT NEG B
+		if (inst==0176) { if ((memory[reg_b] & 0x80) != 0x80){inst_jumpmarkindirect(inst2);} else{inc_reg_p2();} } // JUMP & MARK INDIRECT POS B
+		if (inst==0177) // JUMP & MARK INDIRECT POSITIVE NONZERO B
+		{
+			if ((memory[reg_b] & 0x80) != 0x80 && memory[reg_b]>0) { inst_jumpmarkindirect(inst2); }
+			else { inc_reg_p2(); }
+		} 
+
+		// JUMP X
+		if (inst==0243)  // JUMP DIRECT NONZERO X
+		{ 
+			if (memory[reg_x]!=0) { inst_jumpdirect(inst2); }
+			else { inc_reg_p2(); }
+		}
+		if (inst==0244) // JUMP DIRECT ZERO X
+		{
+			if (memory[reg_x]==0) { inst_jumpdirect(inst2); }
+			else { inc_reg_p2(); } 
+		} 
+		if (inst==0245) // JUMP DIRECT NEGATIVE X
+		{
+			if ( (memory[reg_x] & 0x80) == 0x80) { inst_jumpdirect(inst2); }
+			else { inc_reg_p2(); }
+		} 
+		if (inst==0246) // JUMP DIRECT POSITIVE X
+		{
+			if ( (memory[reg_x] & 0x80) != 0x80) { inst_jumpdirect(inst2); }
+			else { inc_reg_p2(); }
+		} 
+		if (inst==0247) // JUMP DIRECT POSITIVE NONZERO X
+		{
+			if ( ((memory[reg_x] & 0x80) != 0x80) && memory[reg_x]>0) { inst_jumpdirect(inst2); } 
+			else { inc_reg_p2(); }
+		}
+		if (inst==0253) // JUMP INDIRECT NONZERO X
+		{
+			if (memory[reg_x]!=0) { inst_jumpindirect(inst2); }
+			else { inc_reg_p2(); }
+		} 
+		if (inst==0254) // JUMP INDIRECT ZERO X
+		{
+			if (memory[reg_x]==0) { inst_jumpindirect(inst2); }
+			else { inc_reg_p2(); }
+		} 
+		if (inst==0255) // JUMP INDIRECT NEGATIVE X
+		{
+			if ( (memory[reg_x] & 0x80) == 0x80) { inst_jumpindirect(inst2); }
+			else { inc_reg_p2(); }
+		} 
+		if (inst==0256) // JUMP INDIRECT POSITIVE X
+		{
+			if ( (memory[reg_x] & 0x80) != 0x80) { inst_jumpindirect(inst2); }
+			else { inc_reg_p2(); }
+		} 
+		if (inst==0257) // JUMP INDIRECT POSITIVE NONZERO X
+		{
+			if ((memory[reg_x] & 0x80) == 0x80 && memory[reg_x]>0) { inst_jumpindirect(inst2); }
+			else { inc_reg_p2(); }
+		} 
+		if (inst==0263) // JUMP & MARK DIRECT NONZERO X
+		{
+			if (memory[reg_x]!=0) { inst_jumpmarkdirect(inst2); }
+			else { inc_reg_p2(); }
+		} 
+		if (inst==0264) // JUMP & MARK DIRECT ZERO X
+		{
+			if (memory[reg_x]==0) { inst_jumpmarkdirect(inst2); } 
+			else { inc_reg_p2(); }
+		} 
+		if (inst==0265) // JUMP & MARK DIRECT NEGATIVE X
+		{
+			if ( (memory[reg_x] & 0x80) == 0x80) { inst_jumpmarkdirect(inst2); }
+			else { inc_reg_p2(); }
+		} 
+		if (inst==0266) // JUMP & MARK DIRECT POSITIVE X
+		{
+			if ( (memory[reg_x] & 0x80) != 0x80) { inst_jumpmarkdirect(inst2); } 
+			else { inc_reg_p2(); }
+		} 
+		if (inst==0267) // JUMP & MARK DIRECT POSITIVE NONZERO X
+		{
+			if ( (memory[reg_x] & 0x80) != 0x80 && memory[reg_x]>0) { inst_jumpmarkdirect(inst2); }
+			else { inc_reg_p2(); }
+		} 
+		if (inst==0273) // JUMP & MARK INDIRECT NONZERO X
+		{
+			if (memory[reg_x]!=0) { inst_jumpmarkindirect(inst2); }
+			else { inc_reg_p2(); }
+		} 
+		if (inst==0274) // JUMP & MARK INDIRECT ZERO X
+		{
+			if (memory[reg_x]==0) { inst_jumpmarkindirect(inst2); }
+			else { inc_reg_p2(); }
+		} 
+		if (inst==0275) // JUMP & MARK INDIRECT NEGATIVE X
+		{
+			if ( (memory[reg_x] & 0x80) == 0x80) { inst_jumpmarkindirect(inst2); }
+			else { inc_reg_p2(); }
+		} 
+		if (inst==0276) // JUMP & MARK INDIRECT POSITIVE X
+		{
+			if ( (memory[reg_x] & 0x80) != 0x80) { inst_jumpmarkindirect(inst2); }
+			else { inc_reg_p2(); }
+		} 
+		if (inst==0277) // JUMP & MARK INDIR POSITIVE NONZERO X
+		{
+			if ( (memory[reg_x] & 0x80) != 0x80 && memory[reg_x]>0) { inst_jumpmarkindirect(inst2); }
+			else { inc_reg_p2(); }
+		} 
+
+		// JUMP unconditional
+		if (inst==0343|inst==0344|inst==0345|inst==0346|inst==0347) { inst_jumpdirect(inst2); } // JUMP DIRECT
+		if (inst==0353|inst==0354|inst==0355|inst==0356|inst==0357) { inst_jumpindirect(inst2); } // JUMP INDIRECT
+		if (inst==0363|inst==0364|inst==0365|inst==0366|inst==0367) { inst_jumpmarkdirect(inst2); } // JUMP & MARK DIRECT
+		if (inst==0373|inst==0374|inst==0375|inst==0376|inst==0377) { inst_jumpmarkindirect(inst2); } // JUMP & MARK INDIRECT
+
+		// ### SKIP ###
+		if ((inst&0307)==0202) { if(getbit(memory[inst2],(inst&0070)>>3)==0){ inc_reg_p2(); } inc_reg_p2(); } // SKIP ON ZERO
+		if ((inst&0307)==0302) { if(getbit(memory[inst2],(inst&0070)>>3)==1){ inc_reg_p2(); } inc_reg_p2(); } // SKIP ON ONE
+
+		// ### SET ###
+		if ((inst&0307)==0002) { memory[inst2]&=(1<<((inst&0070)>>3))^0xFF; inc_reg_p2(); } // SET TO ZERO
+		if ((inst&0307)==0102) { memory[inst2]|=(1<<((inst&0070)>>3)); inc_reg_p2(); } // SET TO ONE
+
+		// ### SHIFT ###
+		if ((inst&0347)==0001) { memory[reg_a]=shift_right(memory[reg_a],(inst&0030)>>3); inc_reg_p(); } // SHIFT A RIGHT
+		if ((inst&0347)==0201) { memory[reg_a]=shift_left (memory[reg_a],(inst&0030)>>3); inc_reg_p(); } // SHIFT A LEFT
+		if ((inst&0347)==0041) { memory[reg_b]=shift_right(memory[reg_b],(inst&0030)>>3); inc_reg_p(); } // SHIFT B RIGHT
+		if ((inst&0347)==0241) { memory[reg_b]=shift_left (memory[reg_b],(inst&0030)>>3); inc_reg_p(); } // SHIFT B LEFT
+
+		// ### ROTATE ###
+		if ((inst&0347)==0101) { memory[reg_a]=rotate_right(memory[reg_a],(inst&0030)>>3); inc_reg_p(); } // ROTATE A RIGHT
+		if ((inst&0347)==0301) { memory[reg_a]=rotate_left (memory[reg_a],(inst&0030)>>3); inc_reg_p(); } // ROTATE A LEFT
+		if ((inst&0347)==0141) { memory[reg_b]=rotate_right(memory[reg_b],(inst&0030)>>3); inc_reg_p(); } // ROTATE B RIGHT
+		if ((inst&0347)==0341) { memory[reg_b]=rotate_left (memory[reg_b],(inst&0030)>>3); inc_reg_p(); } // ROTATE B LEFT
+
+		// ### NOOP/HALT ###
+		if ((inst&0207)==0200) { inc_reg_p(); } // NO OPERATION
+		if ((inst&0207)==0000) { isrunning=false; inc_reg_p(); } // HALT
+
+		setdatalights(memory[0200]);
+		if(data_switches != 0) // if console data switch is pressed...
+		{
+			memory[reg_in] |= data_switches;
+			setdatalights(memory[0377]);
+		}
+	}
+
+	function shift_left(val, dist) 
+	{
+		var i;
+		if (dist==0) { dist=4; } // bits 3 & 4 specify the distance to shift as 4,1,2, or 3 places
+		for(i=0; i<dist; i++)
+		{
+			val = val<<1;
+		}
+		return val & 0xFF;
+	}
+	function shift_right(val, dist)
+	{
+		var i, bit7;
+		if (dist==0) { dist=4; }
+		for(i=0; i<dist; i++)
+		{
+			bit7 = val & 0x80;
+			val = (val>>1) | bit7;
+		}
+		return val & 0xFF;
+	}
+	function rotate_left(val, dist)
+	{
+		var i, bit7;
+		if (dist==0) { dist=4; }
+		for(i=0; i<dist; i++)
+		{
+			bit7 = (val>>7) & 1;
+			val = (val<<1) | bit7;
+		}
+		return val & 0xFF;
+	}
+	function rotate_right(val, dist)
+	{
+		var i, bit0;
+		if (dist==0) { dist=4; }
+		for(i=0; i<dist; i++)
+		{
+			bit0 = val & 1;
+			val = (val>>1) | (bit0<<7);
+		}
+		return val & 0xFF;
+	}
+
+	function getbit(a, b) { return (a>>b) & 1; }
+
+	function inst_jumpdirect(inst2) { memory[reg_p]=inst2; }
+	function inst_jumpindirect(inst2) { memory[reg_p]=memory[inst2]; }
+	function inst_jumpmarkdirect(inst2) { ni=memory[reg_p]+2; inst_jumpdirect(inst2); memory[memory[reg_p]]=ni; inc_reg_p(); }
+	function inst_jumpmarkindirect(inst2) { ni=memory[reg_p]+2; inst_jumpindirect(inst2); memory[memory[reg_p]]=ni; inc_reg_p(); }
+
+	function inst_add(reg, ro) 
+	{
+		// add the value of ro (right operand)
+		// to the value stored in the reg register
+		var out = 0;
+		var lo = memory[reg]; // left operand
+		var ocadr=(reg|0200)+1; // address of overflow/carry register
+		var overflow=0;
+		var carry = 0;
+		var signl = (lo>>7) & 1; // signs of left and right operands
+		var signr = (ro>>7) & 1; // used to find overflow
+
+		var out = lo + ro;
+		var carry = (out >> 8) & 1;
+		var signo = (out >> 7) & 1;
+
+		// if the signs of the operands are the same
+		// and the sign of the result is different, overflow is set
+		overflow = (signl^(signr^1)) & (signl^signo);
+
+		memory[reg] = out & 0xFF;
+		memory[ocadr] = (carry<<1) | overflow;
+	}
+
+	//function inst_sub(reg, b)
+	//{
+	//	inst_add(reg, ((b^0xFF)+1)&0xFF); // 2's compiliment right operand, then add
+	//}
+	
+	function inst_sub(reg, b) // Austin Erickson 2026-03-02
+	{
+		var lo = memory[reg];                    // left operand
+		var ocadr = (reg | 0200) + 1;            // address of overflow/carry register
+
+		var signl = (lo >> 7) & 1;
+		var signr = (b >> 7) & 1;
+
+		var out   = (lo - b) & 0xFF;            // 8-bit wrapped result
+		var signo = (out >> 7) & 1;
+
+		// Unsigned borrow (like carry-out of a subtractor)
+		var borrow = (lo < b) ? 1 : 0;
+		// If yes (lo < ro) we needed to borrow from a 9th invisible bit, so borrow = 1
+
+		// Signed overflow for subtraction:
+		//  - minus + is + Overflow
+		// + minus - is - Overflow
+		// signs of A and B different AND result sign Ã¢â°  A sign
+		var overflow = (signl ^ signr) & (signl ^ signo);
+
+		memory[reg]   = out;
+		memory[ocadr] = (borrow << 1) | overflow;   // bit 1 = borrow, bit 0 = overflow
+    }
+
+
+	
+</script>
+<script>
+// ===== Nouvelle interface =====
+const OX=62, OY=97, $=s=>document.querySelector(s);
+const panel=$('#panel'), dataLeds=[], ctlLeds={}, keyEls={};
+function el(cls,x,y,html,parent){const d=document.createElement('div');d.className=cls;d.style.left=(x-OX)+'px';d.style.top=(y-OY)+'px';if(html!=null)d.innerHTML=html;(parent||panel).appendChild(d);return d}
+const DX=[219,274,350,403,458,532,588,643], DW=[2,1,4,2,1,4,2,1];
+for(let n=0;n<8;n++){const bit=7-n,x=DX[n];
+ dataLeds[bit]=el('led w',x,184);
+ el('t',x,210,bit);
+ addKey(String(bit),x,268,bit>3?'b':'w','');}
+ 
+// ----- Poids des boutons : base 8 (haut) et base 16 (bas) -----
+(function(){
+ const NS='http://www.w3.org/2000/svg', INK='#15181a', svg=document.createElementNS(NS,'svg');
+ svg.setAttribute('width',1303);svg.setAttribute('height',291);
+ svg.style.cssText='position:absolute;left:0;top:0;pointer-events:none';
+ const X=DX.map(x=>x-OX);
+ function mk(tag,attrs){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);svg.appendChild(e);return e}
+ function groupe(i,j,poids,y){            // i..j = indices des boutons (0 = bit 7)
+  const x1=X[i]-23,x2=X[j]+23,h=11;
+  mk('polygon',{points:[[x1,y],[x1+9,y-h],[x2-9,y-h],[x2,y],[x2-9,y+h],[x1+9,y+h]].map(q=>q.join(',')).join(' '),
+                fill:'none',stroke:INK,'stroke-width':1.6});
+  poids.forEach((p,k)=>{mk('text',{x:X[i+k],y:y+1,'text-anchor':'middle','dominant-baseline':'central',fill:INK,
+                                   style:'font:700 14px Helvetica,Arial,sans-serif'}).textContent=p});
+ }
+ groupe(0,1,[2,1],218);   groupe(2,4,[4,2,1],218);   groupe(5,7,[4,2,1],218);   // base 8
+ groupe(0,3,[8,4,2,1],251); groupe(4,7,[8,4,2,1],251);                          // base 16
+ [['OCT',218],['HEX',251]].forEach(([t,y])=>mk('text',{x:100,y:y+1,'text-anchor':'middle','dominant-baseline':'central',
+                                   fill:INK,style:'font:600 11px Helvetica,Arial,sans-serif;opacity:.7'}).textContent=t);
+ panel.appendChild(svg);
+})();
+ 
+const CTL=[['clear','CLEAR','b',716],['display','DISPLAY','w',787],['set','SET','b',859],['read','READ','w',933],['store','STORE','r',1005],['start','START','w',1076],['stop','STOP','b',1147]];
+CTL.forEach(([k,l,c,x])=>{addKey(k,x,268,c,k==='store'?'ENTER':'');el('t s',x,310,l)});
+[['input',713],['address',859],['memory',1002],['run',1146]].forEach(([k,x])=>{ctlLeds[k]=el('led y',x,182)});
+function addKey(k,x,y,c,txt){const s=el('sock',x,y);const b=document.createElement('button');b.className='key '+c;b.textContent=txt;b.setAttribute('aria-label',k.length>1?k.toUpperCase():'Bit '+k);s.appendChild(b);keyEls[k]=b;
+ let down=false;const dn=()=>{if(down)return;down=true;b.classList.add('dn');press(k)},up=()=>{if(!down)return;down=false;b.classList.remove('dn');release(k)};
+ b.addEventListener('pointerdown',e=>{e.preventDefault();dn()});['pointerup','pointerleave','pointercancel'].forEach(t=>b.addEventListener(t,up));
+ b.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();if(!e.repeat)dn()}});b.addEventListener('keyup',e=>{if(e.key===' '||e.key==='Enter')up()});b.addEventListener('blur',up)}
+function grp(x,y,w,txt,lines){const g=el('grp',x,y,lines?'<i></i>'+txt+'<i></i>':txt);g.style.width=w+'px';g.style.left=(x-OX)+'px'}
+el('t big',390,145,'DATA');el('t big',932,145,'CONTROL');
+grp(716,210,70,'INPUT',false);grp(823,210,140,'ADDRESS',true);grp(969,210,140,'MEMORY',true);grp(1111,210,140,'RUN',true);
+const br=el('brand',0,0,'KENBAK-1');br.style.left='918px';br.style.top='238px';br.style.transform='none';
+el('t s',1235,205,'ON');el('t s',1235,268,'OFF');el('t s',1235,308,'POWER');
+const pw=document.createElement('button');pw.className='pw';pw.setAttribute('aria-label','Interrupteur');pw.setAttribute('aria-pressed','false');pw.innerHTML='<span class="nut"></span><span class="lev"></span>';panel.appendChild(pw);
+pw.addEventListener('click',()=>poweron?powerOff():powerOn());
+
+// ----- Voyants -----
+function setdatalights(a){dataLeds.forEach((e,i)=>e.classList.toggle('on',poweron&&((a>>i)&1)===1))}
+const NAMES=['input','address','memory','run'];
+function ctl(n,on){ctlLeds[n].classList.toggle('on',!!on&&poweron)}
+function lightOff(n){ctl(n,false)}
+function lightOn(n){if(!poweron)return;if(isrunning){ctl('run',true);['input','address','memory'].forEach(lightOff)}else{NAMES.forEach(k=>ctl(k,k===n))}}
+function allOff(){NAMES.forEach(lightOff)}
+
+// ----- Alimentation -----
+function powerOn(){poweron=true;data_switches=0;for(let k=0;k<256;k++)memory[k]=0;curadr=0;pw.setAttribute('aria-pressed','true');setdatalights(0);refresh()}
+function powerOff(){stopRun();poweron=false;memory[reg_in]=0;pw.setAttribute('aria-pressed','false');setdatalights(0);allOff();refresh();say('')}
+
+// ----- Boutons -----
+function press(k){if(!poweron)return;
+ if(/^\d$/.test(k)){data_switches=setbit(+k,data_switches);memory[reg_in]|=data_switches;setdatalights(memory[reg_in]);if(!isrunning)lightOn('input')}
+ else if(k==='read'){lightOn('run');lightOn('memory')}
+ else if(k==='store')lightOn('run');
+ else if(k==='clear')lightOn('input');
+ else if(k==='display')lightOn('address');
+ refresh()}
+function release(k){if(!poweron)return;
+ if(/^\d$/.test(k)){data_switches=resetbit(+k,data_switches);if(data_switches===0){if(!isrunning)lightOff('input');else setdatalights(memory[reg_out])}}
+ else if(k==='clear'){console_clear();lightOff('address');lightOff('memory')}
+ else if(k==='read'){console_read();lightOff('run');lightOff('address')}
+ else if(k==='store'){console_store();allOff();lightOff('run')}
+ else if(k==='set')console_set();
+ else if(k==='display'){console_display();lightOff('input');lightOff('memory')}
+ else if(k==='start')startRun();
+ else if(k==='stop'){stopRun()}
+ refresh()}
+
+// ----- Exécution -----
+let timer=null,last=0,ips=20;
+function startRun(){if(timer)clearTimeout(timer);allOff();isrunning=true;lightOn('run');last=performance.now();say('En marche…');tick()}
+function stopRun(){isrunning=false;if(timer)clearTimeout(timer);timer=null;if(poweron)lightOff('run')}
+function bp(){return $('#bpOn').checked&&memory[parseInt($('#bpA').value||'0',8)&255]===(parseInt($('#bpV').value||'0',8)&255)}
+function tick(){const now=performance.now();let n=Math.min(Math.floor((now-last)*ips/1000),2000);if(n<1){timer=setTimeout(tick,4);return}last=now;
+ for(let k=0;k<n&&isrunning;k++){doinstruction();if(bp()){isrunning=false;say('Pause : condition atteinte.');break}}
+ refresh();
+ if(isrunning)timer=setTimeout(tick,4);else{timer=null;lightOff('run');if(!$('#status').textContent.startsWith('Pause'))say('Arrêté.')}}
+function run(){tick()}
+
+// ----- Affichage de la mémoire -----
+const oct=v=>''+((v&192)>>6)+((v&56)>>3)+(v&7);
+const grid=$('#grid'),cells=[];
+let h='<tr><th></th>'+Array.from({length:16},(_,c)=>'<th>'+c.toString(8)+'</th>').join('')+'</tr>';
+for(let r=0;r<16;r++){h+='<tr><th>'+oct(r*16)+'</th>'+Array.from({length:16},(_,c)=>'<td id="c'+(r*16+c)+'"></td>').join('')+'</tr>'}
+grid.innerHTML=h;for(let k=0;k<256;k++){cells[k]=$('#c'+k)}
+const SP=new Set([0,1,2,3,128,129,130,131,255]);
+let dirty=false;
+function refresh(){if(dirty)return;dirty=true;requestAnimationFrame(()=>{dirty=false;const p=memory[reg_p];
+ for(let k=0;k<256;k++){const c=cells[k],t=oct(memory[k]);if(c.textContent!==t)c.textContent=t;c.className=(SP.has(k)?'sp ':'')+(k===p?'pc':'')}
+ $('#rA').textContent=oct(memory[0]);$('#rB').textContent=oct(memory[1]);$('#rX').textContent=oct(memory[2]);$('#rP').textContent=oct(memory[3]);$('#rAd').textContent=oct(curadr)})}
+function say(t){$('#status').textContent=t}
+
+// ----- Chargement de programme -----
+function loadProgram(txt){if(!poweron)powerOn();let loc=0;
+ for(const line of txt.split(/\r?\n/)){for(const tok of line.trim().split(/\s+/)){const m=/^([0-3][0-7][0-7])(:?)$/.exec(tok);if(!m)break;
+  if(m[2])loc=parseInt(m[1],8);else{memory[loc]=parseInt(m[1],8);loc=(loc+1)&255}}}
+ refresh();say('Programme chargé.')}
+const DEMO="; Compteur binaire sur les voyants\n003: 004\n004: 003 001   ; ADD A,1\n006: 034 200   ; STORE A -> sortie (200)\n010: 344 004   ; JUMP 004\n";
+const DEMO2=`; ===== JEU « PLUS OU MOINS » =====
+; Le Kenbak-1 choisit un nombre secret entre 0 et 255 (case 204). À vous de le deviner.
+;
+; Déroulement :
+;  1. Après le chargement, appuyez sur START (l’adresse de départ 035 est déjà en case 003).
+;     Tous les voyants s’allument sauf le 7 : le jeu est prêt.
+;  2. Appuyez sur le bouton 7 : le nombre secret est tiré (il dépend du moment où vous
+;     appuyez) puis le programme s’arrête (HLT) et attend votre proposition.
+;  3. Entrez un nombre en binaire avec les boutons de données (0 à 255),
+;     puis appuyez sur START. Exemple : essayez 11111111, puis 00000001.
+;  4. Résultat affiché sur les voyants :
+;       4 voyants de GAUCHE allumés  = votre nombre est TROP HAUT
+;       4 voyants de DROITE allumés  = votre nombre est TROP BAS
+;       01111111 (tous sauf le 7)    = GAGNÉ !
+;     Dès que vous saisissez un nouveau nombre, ces voyants s’éteignent.
+;  5. Après chaque essai, rentrez un nouveau nombre puis START.
+;  6. Une fois gagné, appuyez sur le bouton 7 pour rejouer.
+;
+000: 000 000 000 035
+004: 134 200 ; STB DISPLAY
+006: 134 377 ; STB INPUT
+010: 000 ; HLT : attend la proposition
+011: 024 377 ; LDA BUTTONS
+013: 014 204 ; SUBAM [204]
+015: 044 035 ; JPD A=0 035 : gagné
+017: 312 201 ; SKIP 1 ON BIT 1
+021: 344 031 ; JPD UNC 031 : trop bas
+023: 023 360 ; LDAI 360 : trop haut (4 voyants gauche)
+025: 034 200 ; STA DISPLAY
+027: 344 006 ; JPD UNC 006
+031: 023 017 ; LDAI 017 : trop bas (4 voyants droite)
+033: 344 025 ; JPD UNC 025
+035: 023 177 ; LDAI 177 : affiche 01111111
+037: 034 200 ; STA DISPLAY
+041: 124 204 ; LDBM [204]
+043: 072 377 ; SET 0 BIT 7
+045: 272 377 ; SKIP 0 ON BIT 7
+047: 344 043 ; JPD UNC 043
+051: 103 001 ; SUB B 1
+053: 372 377 ; SKIP 1 ON BIT 7
+055: 344 051 ; JPD UNC 051
+057: 134 204 ; STBM [204] : mémorise le nombre secret
+061: 123 000 ; LDBI 000
+063: 344 004 ; JPD UNC 004
+065: 000 000 ; HLT
+`;
+const DEMO3=`; ===== SYRACUSE MINIMAL (85 octets) =====
+; Mode d'emploi :
+;  1. Vitesse à 1000 instr/s. Après le chargement : CLEAR, entrez N (1 à 255)
+;     avec les boutons, puis START. Attention : N=0 boucle sans fin (STOP).
+;  2. À l'arrêt (voyant RUN éteint), les voyants affichent le temps de vol.
+;     N=27 -> 157 en octal (111 étapes).
+;  3. Maximum : CLEAR, entrez 300 (octal), SET, READ, READ.
+;     N=27 -> 044 puis 020 (soit 9232).
+;  4. Autre N : CLEAR, entrez N, START (la dernière ligne relance le programme).
+; N sur 16 bits : A = poids fort, B = poids faible. X = brouillon.
+003: 004
+004: 124 377 ; LOAD B,[377]   B = N (entrée)
+006: 014 000 ; SUB A,[000]    A = A - A = 0
+010: 034 300 ; STORE A,[300]  MAXH = A = 0
+012: 134 301 ; STORE B,[301]  MAXL = B = N
+014: 034 200 ; STORE A,[200]  T = 0 (sortie)
+016: 043 026 ; JPD A<>0 026   poids fort non nul : N > 1, on continue
+020: 113 001 ; SUB B,C=1      B = B - 1
+022: 144 126 ; JPD B=0 126    B = 0 : N valait 1, fini
+024: 103 001 ; ADD B,C=1      B = B + 1 (on restaure)
+026: 302 001 ; SKP 1 [001].0  bit 0 de B = 1 (N impair) : saute la ligne suivante
+030: 344 106 ; JPD UNC 106    N pair : vers la division par 2
+032: 034 302 ; STORE A,[302]  OH = A   (--- N impair : N = 3N+1 ---)
+034: 134 303 ; STORE B,[303]  OL = B
+036: 211     ; SFTL A,1       A = 2A (le bit 0 de A devient 0)
+037: 272 001 ; SKP 0 [001].7  bit 7 de B = 0 : saute la ligne suivante
+041: 102 000 ; SET 1 [000].0  bit 0 de A = 1 (le bit sorti de B passe dans A)
+043: 251     ; SFTL B,1       B = 2B
+044: 102 001 ; SET 1 [001].0  bit 0 de B = 1 : (A,B) = 2N+1
+046: 104 303 ; ADD B,[303]    B = B + OL (retenue dans [202])
+050: 004 302 ; ADD A,[302]    A = A + OH
+052: 212 202 ; SKP 0 [202].1  pas de retenue de B : saute la ligne suivante
+054: 003 001 ; ADD A,C=1      retenue : A = A + 1  -> (A,B) = 3N+1
+056: 224 000 ; LOAD X,[000]   X = A   (--- comparaison avec le max ---)
+060: 214 300 ; SUB X,[300]    X = A - MAXH
+062: 245 116 ; JPD X<0 116    négatif : N < MAX
+064: 244 070 ; JPD X=0 070    égal : comparer les poids faibles
+066: 344 100 ; JPD UNC 100    positif : N > MAX
+070: 224 001 ; LOAD X,[001]   X = B
+072: 214 301 ; SUB X,[301]    X = B - MAXL (emprunt dans [203])
+074: 212 203 ; SKP 0 [203].1  pas d'emprunt : saute la ligne suivante
+076: 344 116 ; JPD UNC 116    emprunt : N < MAX
+100: 034 300 ; STORE A,[300]  MAXH = A
+102: 134 301 ; STORE B,[301]  MAXL = B
+104: 344 116 ; JPD UNC 116    vers le compteur
+106: 111     ; ROTR A,1       --- N pair : N = N/2 --- le bit 0 de A passe en bit 7
+107: 151     ; ROTR B,1       le bit 0 de B (nul, N est pair) passe en bit 7
+110: 272 000 ; SKP 0 [000].7  bit 7 de A = 0 : saute la ligne suivante
+112: 172 001 ; SET 1 [001].7  bit 7 de B = 1 (le bit sorti de A passe dans B)
+114: 072 000 ; SET 0 [000].7  bit 7 de A = 0
+116: 224 200 ; LOAD X,[200]   X = T   (compteur)
+120: 203 001 ; ADD X,C=1      X = X + 1
+122: 234 200 ; STORE X,[200]  T = X (affiché sur les voyants)
+124: 344 016 ; JPD UNC 016    retour à la boucle
+126: 000     ; HALT           fin : voyants = temps de vol
+127: 344 004 ; JPD UNC 004    nouveau N
+`;
+$('#bLoad').onclick=()=>loadProgram($('#src').value);
+$('#bDemo').onclick=()=>{$('#src').value=DEMO;loadProgram(DEMO);say('Exemple chargé : appuyez sur START.')};
+$('#bDemo2').onclick=()=>{$('#src').value=DEMO2;loadProgram(DEMO2);say('Jeu chargé : appuyez sur START, puis sur le bouton 7.')};
+$('#bDemo3').onclick=()=>{$('#src').value=DEMO3;loadProgram(DEMO3);say('Syracuse minimal chargé : CLEAR, N, START.')};
+$('#bStep').onclick=()=>{if(poweron&&!isrunning){doinstruction();refresh()}};
+$('#bReset').onclick=()=>{stopRun();powerOff();powerOn()};
+$('#ips').oninput=e=>{ips=+e.target.value;$('#ipsv').textContent=ips+' instr/s'};
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('on',p.id==='p-'+b.dataset.t))});
+
+// ----- Mise à l’échelle -----
+function fit(){const s=Math.min(1,(innerWidth-24)/1423),m=$('#machine');m.style.transform='scale('+s+')';$('#fit').style.width=1423*s+'px';$('#fit').style.height=340*s+'px'}
+addEventListener('resize',fit);fit();
+for(let k=0;k<256;k++)memory[k]=0;powerOff();
+</script>
+</body>
+</html>

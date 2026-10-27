@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Coloriser du code Kenbak-1 pour PowerPoint</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#eeece7;--card:#fbfaf7;--ink:#23211f;--mute:#6d6962;--line:#d3cfc6;--cell:#f2f0ea;--acc:#1f5fae}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#16181c;--card:#202328;--ink:#e8e6e1;--mute:#9a978f;--line:#363a41;--cell:#1a1c20;--acc:#6fa8ee}}
+:root[data-theme="dark"]{--bg:#16181c;--card:#202328;--ink:#e8e6e1;--mute:#9a978f;--line:#363a41;--cell:#1a1c20;--acc:#6fa8ee}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:18px 14px 40px}
+main{max-width:1150px;margin:0 auto}
+h1{font-size:20px;margin:0 0 2px}h2{font-size:13px;margin:0 0 8px;letter-spacing:.04em;text-transform:uppercase;color:var(--mute)}
+.sub{color:var(--mute);margin:0 0 16px;font-size:13px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:820px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}
+textarea{font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;width:100%;height:330px;background:var(--cell);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px;white-space:pre;resize:vertical;tab-size:4}
+#prev{border-radius:8px;padding:14px;overflow:auto;min-height:330px;max-height:520px;border:1px solid var(--line)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+button{font:600 13px system-ui,sans-serif;padding:7px 13px;border-radius:8px;border:1px solid var(--line);background:var(--cell);color:var(--ink);cursor:pointer}
+button.p{background:var(--acc);color:#fff;border-color:transparent}
+.cols{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px 14px;margin-top:6px}
+.cols label{display:flex;align-items:center;gap:8px;font-size:13px}
+input[type=color]{width:34px;height:26px;padding:0;border:1px solid var(--line);border-radius:6px;background:none;cursor:pointer}
+input[type=number]{width:64px;font:13px system-ui;background:var(--cell);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:3px 6px}
+select{font:13px system-ui;background:var(--cell);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:3px 6px}
+#msg{font-size:13px;color:var(--mute);margin-top:8px;min-height:1.4em}
+</style>
+</head>
+<body>
+<main>
+<h1>Coloriser du code Kenbak-1 pour PowerPoint</h1>
+<p class="sub">Collez votre listing à gauche, réglez les couleurs, puis cliquez sur « Copier » et collez dans PowerPoint (<kbd>Ctrl</kbd>+<kbd>V</kbd>) : les couleurs sont conservées.</p>
+<div class="grid">
+ <div class="card"><h2>Code d’origine</h2><textarea id="src" spellcheck="false"></textarea>
+  <div class="row"><button id="bEx">Exemple</button><button id="bClr">Effacer</button></div></div>
+ <div class="card"><h2>Aperçu</h2><div id="prev"></div>
+  <div class="row"><button class="p" id="bCopy">Copier pour PowerPoint</button></div><div id="msg"></div></div>
+</div>
+<div class="card" style="margin-top:14px"><h2>Couleurs et police</h2>
+ <div class="cols" id="cols"></div>
+ <div class="row"><label>Taille <input type="number" id="fs" min="8" max="48" value="14"> pt</label>
+  <label>Police <select id="ff"><option>Consolas</option><option>Courier New</option><option>Cascadia Mono</option><option>Lucida Console</option></select></label>
+  <button id="bReset">Couleurs par défaut</button></div>
+ <p class="sub" style="margin:10px 0 0">La police doit être installée sur l’ordinateur qui ouvre le diaporama. Les adresses (<code>004:</code>), les octets machine, les instructions, les registres, les valeurs numériques, les étiquettes et les commentaires ont chacun leur couleur.</p>
+</div>
+</main>
+<script>
+/*FMT*/
+const CATS=[["bg","Fond de l’aperçu","#20201E"],["def","Texte / ponctuation","#E6E1D6"],["addr","Adresses","#6CB6FF"],["byte","Octets machine","#D2A8FF"],["op","Instructions","#FF9E64"],["reg","Registres / opérandes","#7EE787"],["num","Valeurs numériques","#F2CC60"],["lab","Étiquettes","#FF7B72"],["com","Commentaires","#7FA37F"]];
+const MN=new Set("ADD SUB LOAD STORE AND OR LNEG JPD JPI JMD JMI SKP SET SFTL SFTR ROTL ROTR HALT HLT NOOP NOP ORG DB START EQU".split(" "));
+const REG=new Set("A B X P OUT IN C UNC".split(" "));
+function tokLine(line){
+ const out=[],push=(c,t)=>{if(t)out.push([c,t])};let m,rest=line.replace(/\t/g,"    "),addr=false;
+ function code(s){
+  if((m=s.match(/^(\s*)([A-Za-z_]\w*:)([\s\S]*)$/))){push("def",m[1]);push("lab",m[2]);s=m[3]}
+  if((m=s.match(/^(\s*)([A-Za-z]+)([\s\S]*)$/))){push("def",m[1]);push(MN.has(m[2].toUpperCase())?"op":"lab",m[2]);s=m[3]}
+  const re=/([A-Za-z_]\w*)|(0x[0-9a-fA-F]+|0b[01]+|\d+[dD]?)|([\s\S])/g;
+  while((m=re.exec(s))){if(m[1])push(REG.has(m[1].toUpperCase())?"reg":"lab",m[1]);else if(m[2])push("num",m[2]);else push("def",m[3])}}
+ if((m=rest.match(/^(\s*)([0-7]{3}:)(\s*)((?:[0-7]{3}[ ]*)*)/))){
+  addr=true;push("def",m[1]);push("addr",m[2]);push("def",m[3]);
+  (m[4].match(/[0-7]{3}|\s+/g)||[]).forEach(t=>push(/^\s/.test(t)?"def":"byte",t));rest=rest.slice(m[0].length);
+  if(rest.charAt(0)===";"){push("def",";");rest=rest.slice(1)}}
+ else if(/^\s*;/.test(rest)){push("com",rest);return out}
+ let k=addr?rest.indexOf(";"):rest.indexOf(";");
+ if(k>=0){code(rest.slice(0,k));push("com",rest.slice(k));return out}
+ if(addr&&(m=rest.match(/^(\s*\S.*?)(\s{2,})(\S[\s\S]*)$/))){const g=m;code(g[1]);push("def",g[2]);push("com",g[3]);return out}
+ code(rest);return out}
+function esc(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/ /g,"&nbsp;")}
+function render(text,col){
+ return text.split(/\r?\n/).map(l=>{const merged=[];tokLine(l).forEach(([c,t])=>{const p=merged[merged.length-1];if(p&&p[0]===c)p[1]+=t;else merged.push([c,t])});
+  return merged.map(([c,t])=>'<span style="color:'+col[c]+'">'+esc(t)+"</span>").join("")}).join("<br>")}
+/*END*/
+const EX=`003: 004     ; START DEBUT
+004: 023 001 ; DEBUT: LOAD A,C=1
+006: 034 300 ; STORE A,[300]       T0 = 1
+010: 034 301 ; STORE A,[301]       T1 = 1
+012: 223 002 ; LOAD X,C=2          X = 2 (index du prochain terme)
+014: 026 276 ; BOUCLE: LOAD A,[276],X   A = case 0276+X = T[X-2]
+016: 006 277 ; ADD A,[277],X       A = A + case 0277+X = T[X-1]
+020: 212 201 ; SKP 0 [0201].1      pas de retenue : saute les deux octets suivants
+022: 000     ; HALT                retenue : dépassement de 255, on s'arrête
+023: 200     ; NOOP                (sert seulement à remplir le saut)
+024: 036 300 ; STORE A,[300],X     T[X] = A
+026: 203 001 ; ADD X,C=1
+030: 344 014 ; JPD UNC BOUCLE`;
+const $=s=>document.querySelector(s);let col={};
+function load(){CATS.forEach(([k,,d])=>col[k]=d);try{const s=JSON.parse(localStorage.getItem("kcol")||"{}");Object.assign(col,s.col||{});if(s.fs)$("#fs").value=s.fs;if(s.ff)$("#ff").value=s.ff}catch(e){}}
+function save(){try{localStorage.setItem("kcol",JSON.stringify({col,fs:$("#fs").value,ff:$("#ff").value}))}catch(e){}}
+function wrap(){return '<div style="font-family:\''+$("#ff").value+"',monospace;font-size:"+$("#fs").value+'pt;color:'+col.def+'">'+render($("#src").value,col)+"</div>"}
+function update(){const p=$("#prev");p.style.background=col.bg;p.style.fontFamily="'"+$("#ff").value+"',monospace";p.style.fontSize=$("#fs").value+"pt";p.style.lineHeight="1.35";p.innerHTML=render($("#src").value,col);save()}
+function build(){const c=$("#cols");c.innerHTML="";CATS.forEach(([k,n])=>{const l=document.createElement("label"),i=document.createElement("input");i.type="color";i.value=col[k];i.oninput=()=>{col[k]=i.value;update()};l.appendChild(i);l.appendChild(document.createTextNode(n));c.appendChild(l)})}
+$("#src").addEventListener("input",update);$("#fs").oninput=update;$("#ff").onchange=update;
+$("#bEx").onclick=()=>{$("#src").value=EX;update()};$("#bClr").onclick=()=>{$("#src").value="";update()};
+$("#bReset").onclick=()=>{CATS.forEach(([k,,d])=>col[k]=d);build();update()};
+$("#bCopy").onclick=async()=>{const html=wrap(),txt=$("#src").value,m=$("#msg");
+ try{await navigator.clipboard.write([new ClipboardItem({"text/html":new Blob([html],{type:"text/html"}),"text/plain":new Blob([txt],{type:"text/plain"})})]);m.textContent="Copié : collez dans PowerPoint."}
+ catch(e){const d=document.createElement("div");d.innerHTML=html;d.style.cssText="position:fixed;left:-9999px;top:0";document.body.appendChild(d);const r=document.createRange();r.selectNodeContents(d);const s=getSelection();s.removeAllRanges();s.addRange(r);
+  let ok=false;try{ok=document.execCommand("copy")}catch(x){}s.removeAllRanges();document.body.removeChild(d);m.textContent=ok?"Copié : collez dans PowerPoint.":"Copie impossible : sélectionnez l’aperçu et faites Ctrl+C."}
+ setTimeout(()=>m.textContent="",3500)};
+load();$("#src").value=EX;build();update();
+</script>
+</body>
+</html>
